@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,6 +12,7 @@ public class PlayerController : MonoBehaviour
     private InputAction _moveAction;
     private InputAction _jumpAction;
     private InputAction _lookAction;
+    private InputAction _InvestigateAction;
 
     private Vector2 _curInput;
     public float moveSpeed;
@@ -24,6 +26,10 @@ public class PlayerController : MonoBehaviour
     private float _minXLook = -60;
     private float _maxXLook = 60;
 
+    public Action OnMouseClicked;
+    public Action OnMouseCanceled;
+    public Action<string> OnItemFound;
+
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
@@ -35,18 +41,23 @@ public class PlayerController : MonoBehaviour
         _moveAction = _input.actions["Move"];
         _jumpAction = _input.actions["Jump"];
         _lookAction = _input.actions["Look"];
+        _InvestigateAction = _input.actions["Investigate"];
 
         _moveAction.performed -= OnMove;
         _moveAction.canceled -= OnMove;
         _jumpAction.started -= OnJump;
         _lookAction.performed -= OnLook;
         _lookAction.canceled -= OnLook;
+        _InvestigateAction.performed -= OnInvestigate;
+        _InvestigateAction.canceled -= OnInvestigate;
 
         _moveAction.performed += OnMove;
         _moveAction.canceled += OnMove;
         _jumpAction.started += OnJump;
         _lookAction.performed += OnLook;
         _lookAction.canceled += OnLook;
+        _InvestigateAction.performed += OnInvestigate;
+        _InvestigateAction.canceled += OnInvestigate;
     }
 
     private void Start()
@@ -126,5 +137,28 @@ public class PlayerController : MonoBehaviour
         _cam.transform.position = c;
 
         transform.eulerAngles += new Vector3(0, _mouseDelta.x * _lookSens);
+    }
+
+    void OnInvestigate(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            OnMouseClicked?.Invoke();
+            Ray ray = new Ray(transform.position + new Vector3(0, 1, 0), _cam.transform.forward);
+            if (Physics.Raycast(ray, out RaycastHit hit, 2f, groundLayer))
+            {
+                Debug.DrawRay(ray.origin, ray.direction * 2f, Color.red, .1f);
+                string info = hit.collider.gameObject.name;
+                OnItemFound?.Invoke(info);
+            }
+            else
+            {
+                Debug.DrawRay(ray.origin, ray.direction * 2f, Color.blue, .1f);
+            }
+        }
+        else if (context.canceled)
+        {
+            OnMouseCanceled?.Invoke();
+        }
     }
 }

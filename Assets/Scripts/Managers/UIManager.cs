@@ -20,6 +20,14 @@ public class UIManager : Singleton<UIManager>
     public T ShowUI<T>() where T : UI_Base
     {
         string uiName = typeof(T).Name;
+        foreach(UI_Base each in _sceneUIs)
+        {
+            if (each.GetType() == typeof(T))
+            {
+                each.Show();
+                return each as T;
+            }
+        }
         T ui = Util.InstantiatePrefabAndGetComponent<T>(path: $"UI/{uiName}", parent: Root);
         _sceneUIs.Add(ui);
 

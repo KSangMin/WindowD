@@ -13,7 +13,6 @@ public class UI_Status : UI_Base
 
     void OnHealthChanged(float ratio)
     {
-        Debug.Log("UI¿¡ Àü´ÞµÊ: " + ratio);
         ImgHealthBar.fillAmount = ratio;
     }
 
