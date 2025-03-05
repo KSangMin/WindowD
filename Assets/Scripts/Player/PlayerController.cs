@@ -113,8 +113,6 @@ public class PlayerController : MonoBehaviour
     {
         if (context.performed) _mouseDelta = context.ReadValue<Vector2>();
         else if (context.canceled) _mouseDelta = Vector2.zero;
-
-        Debug.Log(_mouseDelta);
     }
 
     void Look()
