@@ -4,7 +4,7 @@ public class UI_Base : MonoBehaviour
 {
     GameObject panel;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         panel = transform.GetChild(0).gameObject;
     }

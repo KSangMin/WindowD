@@ -5,8 +5,21 @@ public class UI_Status : UI_Base
 {
     public Image ImgHealthBar;
 
+    private void Start()
+    {
+        GameManager.Instance.player.condition.health.OnStatChangedWithFloat -= OnHealthChanged;
+        GameManager.Instance.player.condition.health.OnStatChangedWithFloat += OnHealthChanged;
+    }
+
     void OnHealthChanged(float ratio)
     {
+        Debug.Log("UI¿¡ Àü´ÞµÊ: " + ratio);
         ImgHealthBar.fillAmount = ratio;
+    }
+
+    public override void Close()
+    {
+        GameManager.Instance.player.condition.health.OnStatChangedWithFloat -= OnHealthChanged;
+        base.Close();
     }
 }

@@ -6,7 +6,7 @@ public class Scene_Main : Scene_Base
     {
         base.Init();
 
-        Util.InstantiatePrefab("EventSystem");
+        Util.InstantiatePrefab("UI/EventSystem");
         UIManager.Instance.ShowUI<UI_Status>();
     }
 
