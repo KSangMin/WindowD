@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody _rb;
     private PlayerInput _input;
     private Camera _cam;
+    [SerializeField] private Animator _animator;
 
     private InputAction _moveAction;
     private InputAction _jumpAction;
@@ -14,19 +15,22 @@ public class PlayerController : MonoBehaviour
     private Vector2 _curInput;
     public float moveSpeed;
     public float jumpPower;
+    LayerMask groundLayer;
 
     private Vector2 _mouseDelta;
     private float _camCurXRot;
-    private float _camDistance = 5f;
+    private float _camDistance = 6f;
     private float _lookSens = 0.1f;
-    private float _minXLook = -70;
-    private float _maxXLook = 70;
+    private float _minXLook = -60;
+    private float _maxXLook = 60;
 
     private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
         _input = GetComponent<PlayerInput>();
         _cam = Camera.main;
+
+        groundLayer = LayerMask.GetMask("Ground");
 
         _moveAction = _input.actions["Move"];
         _jumpAction = _input.actions["Jump"];
@@ -70,13 +74,39 @@ public class PlayerController : MonoBehaviour
 
     void OnMove(InputAction.CallbackContext context)
     {
-        if (context.performed) _curInput = context.ReadValue<Vector2>().normalized;
-        else if(context.canceled) _curInput = Vector2.zero;
+        if (context.performed)
+        {
+            _animator.SetBool("isMoving", true);
+            _curInput = context.ReadValue<Vector2>().normalized;
+        }
+        else if (context.canceled)
+        {
+            _animator.SetBool("isMoving", false);
+            _curInput = Vector2.zero;
+        }
     }
 
     void OnJump(InputAction.CallbackContext context)
     {
+        if (!isGrounded()) return;
+
+        _animator.SetBool("isJumping", true);
         _rb.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
+    }
+
+    bool isGrounded()
+    {
+        Ray ray = new Ray(transform.position, Vector3.down);
+        if (Physics.Raycast(ray, out RaycastHit hit, 1f, groundLayer)) return true;
+        return false;
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            _animator.SetBool("isJumping", false);
+        }
     }
 
     void OnLook(InputAction.CallbackContext context)
