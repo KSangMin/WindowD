@@ -19,6 +19,8 @@ public class PlayerController : MonoBehaviour
     private Vector2 _curInput;
     public float moveSpeed;
     public float maxSpeed;
+    [HideInInspector] public Action<float> OnSpeedChanged;
+
     public float jumpPower;
     public float jumpStamina;
     //[HideInInspector] public bool isMovable;
@@ -76,6 +78,7 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         Move();
+        OnSpeedChanged?.Invoke(_rb.velocity.magnitude);
     }
 
     private void LateUpdate()
@@ -169,12 +172,12 @@ public class PlayerController : MonoBehaviour
     {
         if (context.performed)
         {
-            OnMouseClicked?.Invoke();
             Ray ray = new Ray(transform.position + new Vector3(0, 1, 0), _cam.transform.forward);
             if (Physics.Raycast(ray, out RaycastHit hit, 2f, groundLayer))
             {
                 Debug.DrawRay(ray.origin, ray.direction * 2f, Color.red, .1f);
                 string info = hit.collider.gameObject.name;
+                OnMouseClicked?.Invoke();
                 OnItemFound?.Invoke(info);
             }
             else
