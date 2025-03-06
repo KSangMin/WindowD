@@ -4,10 +4,20 @@ using UnityEngine;
 public class PlayerCondition : MonoBehaviour, IDamageable
 {
     public Stat health = new Stat(100, 100);
+    public Stat stamina = new Stat(100, 100);
 
     private void FixedUpdate()
     {
         health.Subtract(Time.deltaTime);
+        stamina.Add(Time.deltaTime);
+    }
+
+    public bool UseStamina(float amount)
+    {
+        if (stamina.CurValue < amount) return false;
+        
+        stamina.Subtract(amount);
+        return true;
     }
 
     public void TakeDamage(float damage)

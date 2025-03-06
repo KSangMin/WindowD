@@ -4,11 +4,12 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    private PlayerCondition _condition;
     private Rigidbody _rb;
     private PlayerInput _input;
     private Camera _cam;
     [SerializeField] private Animator _animator;
-    [SerializeField] private ParticleSystem dustParticleSystem;
+    [SerializeField] private ParticleSystem _dustParticleSystem;
 
     private InputAction _moveAction;
     private InputAction _jumpAction;
@@ -19,6 +20,7 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed;
     public float maxSpeed;
     public float jumpPower;
+    public float jumpStamina;
     //[HideInInspector] public bool isMovable;
     LayerMask groundLayer;
 
@@ -35,6 +37,7 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
+        _condition = GetComponent<PlayerCondition>();
         _rb = GetComponent<Rigidbody>();
         _input = GetComponent<PlayerInput>();
         _cam = Camera.main;
@@ -62,7 +65,7 @@ public class PlayerController : MonoBehaviour
         _InvestigateAction.performed += OnInvestigate;
         _InvestigateAction.canceled += OnInvestigate;
 
-        dustParticleSystem.Stop();
+        _dustParticleSystem.Stop();
     }
 
     private void Start()
@@ -106,13 +109,13 @@ public class PlayerController : MonoBehaviour
         if (context.performed)
         {
             _animator.SetBool("isMoving", true);
-            if(isGrounded())dustParticleSystem.Play();
+            if(isGrounded())_dustParticleSystem.Play();
             _curInput = context.ReadValue<Vector2>().normalized;
         }
         else if (context.canceled)
         {
             _animator.SetBool("isMoving", false);
-            dustParticleSystem.Stop();
+            _dustParticleSystem.Stop();
             _curInput = Vector2.zero;
         }
     }
@@ -120,9 +123,10 @@ public class PlayerController : MonoBehaviour
     void OnJump(InputAction.CallbackContext context)
     {
         if (!isGrounded()) return;
+        if (!_condition.UseStamina(jumpStamina)) return;
 
         _animator.SetBool("isJumping", true);
-        dustParticleSystem.Stop();
+        _dustParticleSystem.Stop();
         _rb.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
     }
 
@@ -138,7 +142,7 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             _animator.SetBool("isJumping", false);
-            dustParticleSystem.Play();
+            //_dustParticleSystem.Play();
         }
     }
 
