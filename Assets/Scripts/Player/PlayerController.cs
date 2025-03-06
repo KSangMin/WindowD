@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     private PlayerInput _input;
     private Camera _cam;
     [SerializeField] private Animator _animator;
+    [SerializeField] private ParticleSystem dustParticleSystem;
 
     private InputAction _moveAction;
     private InputAction _jumpAction;
@@ -58,6 +59,8 @@ public class PlayerController : MonoBehaviour
         _lookAction.canceled += OnLook;
         _InvestigateAction.performed += OnInvestigate;
         _InvestigateAction.canceled += OnInvestigate;
+
+        dustParticleSystem.Stop();
     }
 
     private void Start()
@@ -88,11 +91,13 @@ public class PlayerController : MonoBehaviour
         if (context.performed)
         {
             _animator.SetBool("isMoving", true);
+            if(isGrounded())dustParticleSystem.Play();
             _curInput = context.ReadValue<Vector2>().normalized;
         }
         else if (context.canceled)
         {
             _animator.SetBool("isMoving", false);
+            dustParticleSystem.Stop();
             _curInput = Vector2.zero;
         }
     }
@@ -102,6 +107,7 @@ public class PlayerController : MonoBehaviour
         if (!isGrounded()) return;
 
         _animator.SetBool("isJumping", true);
+        dustParticleSystem.Stop();
         _rb.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
     }
 
@@ -117,6 +123,7 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             _animator.SetBool("isJumping", false);
+            dustParticleSystem.Play();
         }
     }
 
