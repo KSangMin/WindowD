@@ -142,10 +142,29 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Ground"))
+        if (isGrounded())
         {
             _animator.SetBool("isJumping", false);
-            //_dustParticleSystem.Play();
+        }
+
+        if (collision.gameObject.CompareTag("MovingPlatform"))
+        {
+            foreach (ContactPoint point in collision.contacts)
+            {
+                if (point.normal.y >= 0.5f)
+                {
+                    transform.SetParent(collision.transform);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("MovingPlatform"))
+        {
+            transform.SetParent(null);
         }
     }
 

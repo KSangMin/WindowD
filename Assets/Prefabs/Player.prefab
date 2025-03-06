@@ -6399,7 +6399,7 @@ MonoBehaviour:
   _animator: {fileID: 7095448432727851225}
   _dustParticleSystem: {fileID: 8977174895704704163}
   moveSpeed: 5
-  maxSpeed: 10
+  maxSpeed: 8
   jumpPower: 80
   jumpStamina: 10
 --- !u!114 &660638333055066651
