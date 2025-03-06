@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -96,6 +97,19 @@ public class PlayerController : MonoBehaviour
             _curInput = Vector2.zero;
         }
     }
+    
+    public void ExecuteRun(float time, float runSpeed)
+    {
+        StartCoroutine(Run(time, runSpeed));
+    }
+
+    IEnumerator Run(float time, float runSpeed)
+    {
+        float originalSpeed = moveSpeed;
+        moveSpeed = runSpeed;
+        yield return new WaitForSeconds(time);
+        moveSpeed = originalSpeed;
+    }
 
     void OnJump(InputAction.CallbackContext context)
     {
@@ -143,13 +157,13 @@ public class PlayerController : MonoBehaviour
     {
         if (context.performed)
         {
-            OnMouseClicked?.Invoke();
             Ray ray = new Ray(transform.position + new Vector3(0, 1, 0), _cam.transform.forward);
-            if (Physics.Raycast(ray, out RaycastHit hit, 2f, groundLayer))
+            if (Physics.Raycast(ray, out RaycastHit hit, 2f) && hit.collider.gameObject.TryGetComponent<FloatingItem>(out FloatingItem item))
             {
-                Debug.DrawRay(ray.origin, ray.direction * 2f, Color.red, .1f);
-                string info = hit.collider.gameObject.name;
+                Debug.DrawRay(ray.origin, ray.direction * 3f, Color.red, .1f);
+                string info = item.itemData.displayName + "\n" + item.itemData.description;
                 OnItemFound?.Invoke(info);
+                OnMouseClicked?.Invoke();
             }
             else
             {
