@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     private PlayerCondition _condition;
+    private Collider _collider;
     private Rigidbody _rb;
     private PlayerInput _input;
     private Camera _cam;
@@ -37,15 +38,26 @@ public class PlayerController : MonoBehaviour
     [HideInInspector] public Action OnMouseCanceled;
     [HideInInspector] public Action<string> OnItemFound;
 
+    public PhysicMaterial normalMaterial;
+    public PhysicMaterial zeroFrictionMaterial;
+
     private void Awake()
     {
         _condition = GetComponent<PlayerCondition>();
+        _collider = GetComponent<Collider>();
         _rb = GetComponent<Rigidbody>();
         _input = GetComponent<PlayerInput>();
         _cam = Camera.main;
 
         groundLayer = LayerMask.GetMask("Ground");
 
+        ResetActions();
+
+        _dustParticleSystem.Stop();
+    }
+
+    void ResetActions()
+    {
         _moveAction = _input.actions["Move"];
         _jumpAction = _input.actions["Jump"];
         _lookAction = _input.actions["Look"];
@@ -66,8 +78,6 @@ public class PlayerController : MonoBehaviour
         _lookAction.canceled += OnLook;
         _InvestigateAction.performed += OnInvestigate;
         _InvestigateAction.canceled += OnInvestigate;
-
-        _dustParticleSystem.Stop();
     }
 
     private void Start()
@@ -158,6 +168,13 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
+
+        CheckFriction(collision);
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        CheckFriction(collision);
     }
 
     private void OnCollisionExit(Collision collision)
@@ -166,6 +183,22 @@ public class PlayerController : MonoBehaviour
         {
             transform.SetParent(null);
         }
+
+        _collider.material = normalMaterial;
+    }
+
+    void CheckFriction(Collision collision)
+    {
+        bool isWall = false;
+        foreach (ContactPoint contact in collision.contacts)
+        {
+            if (contact.normal.y < 0.5f)
+            {
+                isWall = true;
+                break;
+            }
+        }
+        _collider.material = isWall ? zeroFrictionMaterial : normalMaterial;
     }
 
     void OnLook(InputAction.CallbackContext context)
