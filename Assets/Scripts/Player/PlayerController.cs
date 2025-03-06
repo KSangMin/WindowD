@@ -17,7 +17,9 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 _curInput;
     public float moveSpeed;
+    public float maxSpeed;
     public float jumpPower;
+    //[HideInInspector] public bool isMovable;
     LayerMask groundLayer;
 
     private Vector2 _mouseDelta;
@@ -27,9 +29,9 @@ public class PlayerController : MonoBehaviour
     private float _minXLook = -60;
     private float _maxXLook = 60;
 
-    public Action OnMouseClicked;
-    public Action OnMouseCanceled;
-    public Action<string> OnItemFound;
+    [HideInInspector] public Action OnMouseClicked;
+    [HideInInspector] public Action OnMouseCanceled;
+    [HideInInspector] public Action<string> OnItemFound;
 
     private void Awake()
     {
@@ -82,8 +84,21 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 dir = transform.forward * _curInput.y + transform.right * _curInput.x;
         dir *= moveSpeed;
-        dir.y = _rb.velocity.y;
-        _rb.velocity = dir;
+        Vector3 horVelocity = new Vector3(_rb.velocity.x, 0, _rb.velocity.z);
+        float horSpeed = horVelocity.magnitude;
+        if (horSpeed > maxSpeed)
+        {
+            //cos 계산 후 각도에 따라 다른 방향일 때만 힘 적용
+            float cos = Vector3.Dot(dir.normalized, horVelocity.normalized);
+            float weight = (1 - cos)/ 4;
+
+            _rb.AddForce(dir * weight, ForceMode.Impulse);
+            Debug.Log($"수평 속도: {horSpeed}, 가중치: {weight}");
+        }
+        else
+        {
+            _rb.AddForce(dir, ForceMode.Impulse);
+        }
     }
 
     void OnMove(InputAction.CallbackContext context)
@@ -114,7 +129,7 @@ public class PlayerController : MonoBehaviour
     bool isGrounded()
     {
         Ray ray = new Ray(transform.position, Vector3.down);
-        if (Physics.Raycast(ray, out RaycastHit hit, 1f, groundLayer)) return true;
+        if (Physics.Raycast(ray, out RaycastHit hit, 0.5f, groundLayer)) return true;
         return false;
     }
 
