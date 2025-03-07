@@ -9,17 +9,19 @@ public class Jumper : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            foreach(ContactPoint point in collision.contacts)
+            foreach (ContactPoint point in collision.contacts)
             {
                 float cos = Vector3.Dot(point.normal, transform.up);
                 if (cos < -0.5f)
                 {
                     Rigidbody rb = collision.gameObject.GetComponent<Rigidbody>();
                     rb.AddForce(transform.up * jumpPower, ForceMode.Impulse);
+                    Debug.Log("มกวมวิ");
                     break;
                 }
             }
-            
+            //Rigidbody rb = collision.gameObject.GetComponent<Rigidbody>();
+            //rb.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
         }
     }
 }
