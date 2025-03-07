@@ -26,13 +26,15 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed;
     public float maxSpeed;
     [HideInInspector] public Action<float> OnSpeedChanged;
-    
+
     //점프
     public float jumpPower;
     public float jumpStamina;
     //[HideInInspector] public bool isMovable;
     LayerMask groundLayer;
     bool isJumping;
+    float jumpCount;
+    public float maxJumpCount = 2;
 
     //회전
     private Vector2 _mouseDelta;
@@ -54,6 +56,8 @@ public class PlayerController : MonoBehaviour
     float maxHangTime = 1f;
 
     #endregion 필드
+
+    #region 이벤트 함수
 
     private void Awake()
     {
@@ -119,8 +123,10 @@ public class PlayerController : MonoBehaviour
 
     private void LateUpdate()
     {
-        if(_canLook) Look();
+        if (_canLook) Look();
     }
+
+    #endregion 이벤트 함수
 
     #region 이동
 
@@ -161,7 +167,7 @@ public class PlayerController : MonoBehaviour
         if (_canLook && context.performed)
         {
             _animator.SetBool("isMoving", true);
-            if(isGrounded())_dustParticleSystem.Play();
+            if (isGrounded()) _dustParticleSystem.Play();
             _curInput = context.ReadValue<Vector2>().normalized;
         }
         else if (context.canceled)
@@ -193,17 +199,18 @@ public class PlayerController : MonoBehaviour
     //키보드 스페이스바 입력
     void OnJump(InputAction.CallbackContext context)
     {
-        if (!isGrounded() || isHanging) return;
+        if (isHanging || jumpCount >= maxJumpCount) return;
         if (!_condition.UseStamina(jumpStamina)) return;
 
-        _animator.SetBool("isJumping", true);
-        _dustParticleSystem.Stop();
         Jump(Vector3.up);
     }
 
     void Jump(Vector3 jumpDir)
     {
+        jumpCount++;
         isJumping = true;
+        _animator.SetBool("isJumping", true);
+        _dustParticleSystem.Stop();
         _rb.AddForce(jumpDir * jumpPower, ForceMode.Impulse);
     }
 
@@ -211,9 +218,8 @@ public class PlayerController : MonoBehaviour
     bool isGrounded()
     {
         Ray ray = new Ray(transform.position + new Vector3(0, 0.1f, 0), Vector3.down);
-        Debug.DrawRay(ray.origin, ray.direction * 0.2f, Color.red, 5f);
-        if (Physics.Raycast(ray, out RaycastHit hit, 0.2f, groundLayer)) return true;
-        return false;
+        //Debug.DrawRay(ray.origin, ray.direction * 0.2f, Color.red, 5f);
+        return Physics.Raycast(ray, 0.2f, groundLayer);
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -221,6 +227,7 @@ public class PlayerController : MonoBehaviour
         // 점프판정
         if (isGrounded())
         {
+            jumpCount = 0;
             isJumping = false;
             hangedAlready = false;
             _animator.SetBool("isJumping", false);
