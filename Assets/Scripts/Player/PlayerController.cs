@@ -38,6 +38,9 @@ public class PlayerController : MonoBehaviour
     [HideInInspector] public Action OnMouseCanceled;
     [HideInInspector] public Action<string> OnItemFound;
 
+    public PhysicMaterial normalMaterial;
+    public PhysicMaterial zeroFrictionMaterial;
+
     private void Awake()
     {
         _condition = GetComponent<PlayerCondition>();
@@ -97,7 +100,6 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 dir = transform.forward * _curInput.y + transform.right * _curInput.x;
         dir *= moveSpeed;
-        //_rb.velocity = GetDir();
         Vector3 horVelocity = new Vector3(_rb.velocity.x, 0, _rb.velocity.z);
         float horSpeed = horVelocity.magnitude;
         if (horSpeed > maxSpeed)
@@ -113,15 +115,6 @@ public class PlayerController : MonoBehaviour
         {
             _rb.AddForce(dir, ForceMode.Impulse);
         }
-    }
-
-    Vector3 GetDir()
-    {
-        Vector3 dir = transform.forward * _curInput.y + transform.right * _curInput.x;
-        dir *= moveSpeed;
-        dir.y = _rb.velocity.y;
-
-        return dir;
     }
 
     void OnMove(InputAction.CallbackContext context)
@@ -176,6 +169,13 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
+
+        CheckWallFriction(collision);
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        CheckWallFriction(collision);
     }
 
     private void OnCollisionExit(Collision collision)
@@ -184,6 +184,22 @@ public class PlayerController : MonoBehaviour
         {
             transform.SetParent(null);
         }
+
+        _collider.material = normalMaterial;
+    }
+
+    void CheckWallFriction(Collision collision)
+    {
+        bool isWall = false;
+        foreach (ContactPoint contact in collision.contacts)
+        {
+            if (contact.normal.y < 0.5f)
+            {
+                isWall = true;
+                break;
+            }
+        }
+        _collider.material = isWall ? zeroFrictionMaterial : normalMaterial;
     }
 
     void OnLook(InputAction.CallbackContext context)
