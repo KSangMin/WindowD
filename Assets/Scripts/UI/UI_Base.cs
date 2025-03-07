@@ -19,7 +19,7 @@ public class UI_Base : MonoBehaviour
         panel.SetActive(false);
     }
 
-    public virtual void Close()
+    public virtual void Destroy()
     {
         Destroy(gameObject);
     }

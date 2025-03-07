@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     #region 필드
+
     private PlayerCondition _condition;
     private Collider _collider;
     private Rigidbody _rb;
@@ -40,11 +41,7 @@ public class PlayerController : MonoBehaviour
     private float _lookSens = 0.1f;
     private float _minXLook = -60;
     private float _maxXLook = 60;
-
-    //마우스 클릭 및 아이템 UI
-    [HideInInspector] public Action OnMouseClicked;
-    [HideInInspector] public Action OnMouseCanceled;
-    [HideInInspector] public Action<string> OnItemFound;
+    private bool _canLook;
 
     //벽 마찰력
     public PhysicMaterial normalMaterial;
@@ -55,7 +52,9 @@ public class PlayerController : MonoBehaviour
     bool isHanging;
     float hangTimer;
     float maxHangTime = 1f;
+
     #endregion 필드
+
     private void Awake()
     {
         _condition = GetComponent<PlayerCondition>();
@@ -85,7 +84,6 @@ public class PlayerController : MonoBehaviour
         _lookAction.performed -= OnLook;
         _lookAction.canceled -= OnLook;
         _InvestigateAction.performed -= OnInvestigate;
-        _InvestigateAction.canceled -= OnInvestigate;
 
         _moveAction.performed += OnMove;
         _moveAction.canceled += OnMove;
@@ -93,16 +91,17 @@ public class PlayerController : MonoBehaviour
         _lookAction.performed += OnLook;
         _lookAction.canceled += OnLook;
         _InvestigateAction.performed += OnInvestigate;
-        _InvestigateAction.canceled += OnInvestigate;
     }
 
     private void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
+        SetCanLook(true);
     }
 
     private void FixedUpdate()
     {
+        if (!_canLook) return;
+
         if (isHanging)//벽타기 진행
         {
             hangTimer += Time.deltaTime;
@@ -120,7 +119,7 @@ public class PlayerController : MonoBehaviour
 
     private void LateUpdate()
     {
-        Look();
+        if(_canLook) Look();
     }
 
     #region 이동
@@ -159,7 +158,7 @@ public class PlayerController : MonoBehaviour
     //키보드 방향키 입력
     void OnMove(InputAction.CallbackContext context)
     {
-        if (context.performed)
+        if (_canLook && context.performed)
         {
             _animator.SetBool("isMoving", true);
             if(isGrounded())_dustParticleSystem.Play();
@@ -173,13 +172,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    //키보드 스페이스바 입력
-
     public void ExecuteRun(float time, float runSpeed)
     {
         StartCoroutine(Run(time, runSpeed));
     }
 
+    //달리기
     IEnumerator Run(float time, float runSpeed)
     {
         float originalSpeed = moveSpeed;
@@ -192,8 +190,7 @@ public class PlayerController : MonoBehaviour
 
     #region 점프, 벽타기
 
-
-
+    //키보드 스페이스바 입력
     void OnJump(InputAction.CallbackContext context)
     {
         if (!isGrounded() || isHanging) return;
@@ -209,7 +206,6 @@ public class PlayerController : MonoBehaviour
         isJumping = true;
         _rb.AddForce(jumpDir * jumpPower, ForceMode.Impulse);
     }
-
 
     //바닥 착지 판정
     bool isGrounded()
@@ -314,34 +310,37 @@ public class PlayerController : MonoBehaviour
         _camCurXRot = Mathf.Clamp(_camCurXRot, _minXLook, _maxXLook);
         _cam.transform.localEulerAngles = new Vector3(-_camCurXRot, 0, 0);
 
-        Vector3 c = transform.position + new Vector3(0, 1, 0);
+        Vector3 c = transform.position + new Vector3(0, 2, 0);
         c -= _cam.transform.forward * _camDistance;
         _cam.transform.position = c;
 
         transform.eulerAngles += new Vector3(0, _mouseDelta.x * _lookSens);
     }
 
+    public void SetCanLook(bool flag)
+    {
+        _canLook = flag;
+        Cursor.lockState = _canLook ? CursorLockMode.Locked : CursorLockMode.None;
+    }
+
     //마우스 좌클릭 입력
     void OnInvestigate(InputAction.CallbackContext context)
     {
+        if (!_canLook) return;
+
         if (context.performed)
         {
-            Ray ray = new Ray(transform.position + new Vector3(0, 1, 0), _cam.transform.forward);
-            if (Physics.Raycast(ray, out RaycastHit hit, 2f) && hit.collider.gameObject.TryGetComponent<FloatingItem>(out FloatingItem item))
+            float distanceToHead = Vector3.Distance(transform.position, _cam.transform.position);
+            Ray ray = new Ray(_cam.transform.position + _cam.transform.forward * distanceToHead, _cam.transform.forward);
+            Debug.DrawRay(ray.origin, ray.direction * 3f, Color.red, .1f);
+            if (Physics.Raycast(ray, out RaycastHit hit, 5f) && hit.collider.gameObject.TryGetComponent<FloatingItem>(out FloatingItem item))
             {
-                Debug.DrawRay(ray.origin, ray.direction * 3f, Color.red, .1f);
                 string info = item.itemData.displayName + "\n" + item.itemData.description;
-                OnItemFound?.Invoke(info);
-                OnMouseClicked?.Invoke();
+                var ui = UIManager.Instance.ShowPopupUI<UI_Info>();
+                ui.SetInfoText(info);
+                ui.destroyAction += () => SetCanLook(true);
+                SetCanLook(false);
             }
-            else
-            {
-                Debug.DrawRay(ray.origin, ray.direction * 2f, Color.blue, .1f);
-            }
-        }
-        else if (context.canceled)
-        {
-            OnMouseCanceled?.Invoke();
         }
     }
 
