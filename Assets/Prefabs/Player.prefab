@@ -6401,7 +6401,7 @@ MonoBehaviour:
   moveSpeed: 5
   maxSpeed: 8
   jumpPower: 80
-  jumpStamina: 10
+  jumpStamina: 5
   normalMaterial: {fileID: 13400000, guid: 3286e48d77ee037499b8b8685b11292b, type: 2}
   zeroFrictionMaterial: {fileID: 13400000, guid: 89bfcd20d2473db4c9050484d31b7332, type: 2}
 --- !u!114 &660638333055066651

@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    #region 필드
     private PlayerCondition _condition;
     private Collider _collider;
     private Rigidbody _rb;
@@ -12,21 +13,26 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Animator _animator;
     [SerializeField] private ParticleSystem _dustParticleSystem;
 
+    //입력
     private InputAction _moveAction;
     private InputAction _jumpAction;
     private InputAction _lookAction;
     private InputAction _InvestigateAction;
 
+    //이동
     private Vector2 _curInput;
     public float moveSpeed;
     public float maxSpeed;
     [HideInInspector] public Action<float> OnSpeedChanged;
-
+    
+    //점프
     public float jumpPower;
     public float jumpStamina;
     //[HideInInspector] public bool isMovable;
     LayerMask groundLayer;
+    bool isJumping;
 
+    //회전
     private Vector2 _mouseDelta;
     private float _camCurXRot;
     private float _camDistance = 6f;
@@ -34,13 +40,21 @@ public class PlayerController : MonoBehaviour
     private float _minXLook = -60;
     private float _maxXLook = 60;
 
+    //마우스 클릭 및 아이템 UI
     [HideInInspector] public Action OnMouseClicked;
     [HideInInspector] public Action OnMouseCanceled;
     [HideInInspector] public Action<string> OnItemFound;
 
+    //벽 마찰력
     public PhysicMaterial normalMaterial;
     public PhysicMaterial zeroFrictionMaterial;
 
+    //벽타기
+    bool hangedAlready;
+    bool isHanging;
+    float hangTimer;
+    float maxHangTime = 1f;
+    #endregion 필드
     private void Awake()
     {
         _condition = GetComponent<PlayerCondition>();
@@ -56,6 +70,7 @@ public class PlayerController : MonoBehaviour
         _dustParticleSystem.Stop();
     }
 
+    //InputAction Event 초기화
     void ResetActions()
     {
         _moveAction = _input.actions["Move"];
@@ -87,7 +102,18 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Move();
+        if (isHanging)//벽타기 진행
+        {
+            hangTimer += Time.deltaTime;
+            if (hangTimer >= maxHangTime) EndWallHanging();
+            MoveVertical();
+        }
+        else
+        {
+            Move();
+        }
+
+        //속도계 UI
         OnSpeedChanged?.Invoke(_rb.velocity.magnitude);
     }
 
@@ -96,6 +122,9 @@ public class PlayerController : MonoBehaviour
         Look();
     }
 
+    #region 이동
+
+    //수평이동
     void Move()
     {
         Vector3 dir = transform.forward * _curInput.y + transform.right * _curInput.x;
@@ -117,6 +146,16 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    //수직이동
+    void MoveVertical()
+    {
+        Vector3 dir = transform.up * _curInput.y + transform.right * _curInput.x;
+        dir *= moveSpeed;
+        dir.z = _rb.velocity.z;
+        _rb.velocity = dir;
+    }
+
+    //키보드 방향키 입력
     void OnMove(InputAction.CallbackContext context)
     {
         if (context.performed)
@@ -133,16 +172,29 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    #endregion 이동
+
+    #region 점프, 벽타기
+
+    //키보드 스페이스바 입력
     void OnJump(InputAction.CallbackContext context)
     {
-        if (!isGrounded()) return;
+        if (!isGrounded() || isHanging) return;
         if (!_condition.UseStamina(jumpStamina)) return;
 
         _animator.SetBool("isJumping", true);
         _dustParticleSystem.Stop();
-        _rb.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
+        Jump(Vector3.up);
     }
 
+    void Jump(Vector3 jumpDir)
+    {
+        isJumping = true;
+        _rb.AddForce(jumpDir * jumpPower, ForceMode.Impulse);
+    }
+
+
+    //바닥 착지 판정
     bool isGrounded()
     {
         Ray ray = new Ray(transform.position + new Vector3(0, 0.1f, 0), Vector3.down);
@@ -153,29 +205,31 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        // 점프판정
         if (isGrounded())
         {
+            isJumping = false;
+            hangedAlready = false;
             _animator.SetBool("isJumping", false);
         }
 
+        //움직이는 플랫폼 판정
         if (collision.gameObject.CompareTag("MovingPlatform"))
         {
-            foreach (ContactPoint point in collision.contacts)
+            if (collision.contacts[0].normal.y >= 0.5f)//윗면이면 
             {
-                if (point.normal.y >= 0.5f)
-                {
-                    transform.SetParent(collision.transform);
-                    break;
-                }
+                transform.SetParent(collision.transform);
             }
+
         }
 
-        CheckWallFriction(collision);
+        //벽 판정
+        CheckWall(collision);
     }
 
     private void OnCollisionStay(Collision collision)
     {
-        CheckWallFriction(collision);
+        CheckWall(collision);
     }
 
     private void OnCollisionExit(Collision collision)
@@ -186,28 +240,57 @@ public class PlayerController : MonoBehaviour
         }
 
         _collider.material = normalMaterial;
+        if(hangedAlready) EndWallHanging();
     }
 
-    void CheckWallFriction(Collision collision)
+    //벽 판정
+    void CheckWall(Collision collision)
     {
-        bool isWall = false;
-        foreach (ContactPoint contact in collision.contacts)
-        {
-            if (contact.normal.y < 0.5f)
-            {
-                isWall = true;
-                break;
-            }
-        }
+        bool isWall = collision.contacts[0].normal.y < 0.5f;
+
         _collider.material = isWall ? zeroFrictionMaterial : normalMaterial;
+
+        if(isWall && isJumping && !hangedAlready)
+        {
+            isJumping = false;
+            BeginWallHanging();
+        }
     }
 
+    //벽타기 시작 -> Fixedupdate에서 시간 체크
+    void BeginWallHanging()
+    {
+        hangedAlready = true;
+        isHanging = true;
+        hangTimer = 0;
+        _rb.useGravity = false;
+        _rb.velocity = Vector3.zero;
+
+        Debug.Log("벽타기 시작");
+    }
+
+    //벽타기 끝
+    void EndWallHanging()
+    {
+        isHanging = false;
+        _rb.useGravity = true;
+        hangTimer = maxHangTime;
+
+        Debug.Log("벽타기 끝");
+    }
+
+    #endregion 점프, 벽타기
+
+    #region 마우스
+
+    //마우스 움직임 입력
     void OnLook(InputAction.CallbackContext context)
     {
         if (context.performed) _mouseDelta = context.ReadValue<Vector2>();
         else if (context.canceled) _mouseDelta = Vector2.zero;
     }
 
+    //카메라 및 플레이어 회전
     void Look()
     {
         _camCurXRot += _mouseDelta.y * _lookSens;
@@ -221,6 +304,7 @@ public class PlayerController : MonoBehaviour
         transform.eulerAngles += new Vector3(0, _mouseDelta.x * _lookSens);
     }
 
+    //마우스 좌클릭 입력
     void OnInvestigate(InputAction.CallbackContext context)
     {
         if (context.performed)
@@ -243,4 +327,6 @@ public class PlayerController : MonoBehaviour
             OnMouseCanceled?.Invoke();
         }
     }
+
+    #endregion 마우스
 }
