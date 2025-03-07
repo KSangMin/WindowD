@@ -12,9 +12,9 @@ GameObject:
   - component: {fileID: 33188084988294994}
   - component: {fileID: 23632355988759734}
   - component: {fileID: 495646487620860022}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: rpgpp_lt_box_wood_01
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

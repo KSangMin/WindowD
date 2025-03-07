@@ -5,21 +5,35 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    #region 필드
+    private PlayerCondition _condition;
+    private Collider _collider;
     private Rigidbody _rb;
     private PlayerInput _input;
     private Camera _cam;
     [SerializeField] private Animator _animator;
+    [SerializeField] private ParticleSystem _dustParticleSystem;
 
+    //입력
     private InputAction _moveAction;
     private InputAction _jumpAction;
     private InputAction _lookAction;
     private InputAction _InvestigateAction;
 
+    //이동
     private Vector2 _curInput;
     public float moveSpeed;
+    public float maxSpeed;
+    [HideInInspector] public Action<float> OnSpeedChanged;
+    
+    //점프
     public float jumpPower;
+    public float jumpStamina;
+    //[HideInInspector] public bool isMovable;
     LayerMask groundLayer;
+    bool isJumping;
 
+    //회전
     private Vector2 _mouseDelta;
     private float _camCurXRot;
     private float _camDistance = 6f;
@@ -27,18 +41,39 @@ public class PlayerController : MonoBehaviour
     private float _minXLook = -60;
     private float _maxXLook = 60;
 
-    public Action OnMouseClicked;
-    public Action OnMouseCanceled;
-    public Action<string> OnItemFound;
+    //마우스 클릭 및 아이템 UI
+    [HideInInspector] public Action OnMouseClicked;
+    [HideInInspector] public Action OnMouseCanceled;
+    [HideInInspector] public Action<string> OnItemFound;
 
+    //벽 마찰력
+    public PhysicMaterial normalMaterial;
+    public PhysicMaterial zeroFrictionMaterial;
+
+    //벽타기
+    bool hangedAlready;
+    bool isHanging;
+    float hangTimer;
+    float maxHangTime = 1f;
+    #endregion 필드
     private void Awake()
     {
+        _condition = GetComponent<PlayerCondition>();
+        _collider = GetComponent<Collider>();
         _rb = GetComponent<Rigidbody>();
         _input = GetComponent<PlayerInput>();
         _cam = Camera.main;
 
         groundLayer = LayerMask.GetMask("Ground");
 
+        ResetActions();
+
+        _dustParticleSystem.Stop();
+    }
+
+    //InputAction Event 초기화
+    void ResetActions()
+    {
         _moveAction = _input.actions["Move"];
         _jumpAction = _input.actions["Jump"];
         _lookAction = _input.actions["Look"];
@@ -68,7 +103,19 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Move();
+        if (isHanging)//벽타기 진행
+        {
+            hangTimer += Time.deltaTime;
+            if (hangTimer >= maxHangTime) EndWallHanging();
+            MoveVertical();
+        }
+        else
+        {
+            Move();
+        }
+
+        //속도계 UI
+        OnSpeedChanged?.Invoke(_rb.velocity.magnitude);
     }
 
     private void LateUpdate()
@@ -76,28 +123,58 @@ public class PlayerController : MonoBehaviour
         Look();
     }
 
+    #region 이동
+
+    //수평이동
     void Move()
     {
         Vector3 dir = transform.forward * _curInput.y + transform.right * _curInput.x;
         dir *= moveSpeed;
-        dir.y = _rb.velocity.y;
+        Vector3 horVelocity = new Vector3(_rb.velocity.x, 0, _rb.velocity.z);
+        float horSpeed = horVelocity.magnitude;
+        if (horSpeed > maxSpeed)
+        {
+            //cos 계산 후 각도에 따라 다른 방향일 때만 힘 적용
+            float cos = Vector3.Dot(dir.normalized, horVelocity.normalized);
+            float weight = (1 - cos) / 4;
+
+            _rb.AddForce(dir * weight, ForceMode.Impulse);
+            //Debug.Log($"수평 속도: {horSpeed}, 가중치: {weight}");
+        }
+        else
+        {
+            _rb.AddForce(dir, ForceMode.Impulse);
+        }
+    }
+
+    //수직이동
+    void MoveVertical()
+    {
+        Vector3 dir = transform.up * _curInput.y + transform.right * _curInput.x;
+        dir *= moveSpeed;
+        dir.z = _rb.velocity.z;
         _rb.velocity = dir;
     }
 
+    //키보드 방향키 입력
     void OnMove(InputAction.CallbackContext context)
     {
         if (context.performed)
         {
             _animator.SetBool("isMoving", true);
+            if(isGrounded())_dustParticleSystem.Play();
             _curInput = context.ReadValue<Vector2>().normalized;
         }
         else if (context.canceled)
         {
             _animator.SetBool("isMoving", false);
+            _dustParticleSystem.Stop();
             _curInput = Vector2.zero;
         }
     }
-    
+
+    //키보드 스페이스바 입력
+
     public void ExecuteRun(float time, float runSpeed)
     {
         StartCoroutine(Run(time, runSpeed));
@@ -111,35 +188,126 @@ public class PlayerController : MonoBehaviour
         moveSpeed = originalSpeed;
     }
 
+    #endregion 이동
+
+    #region 점프, 벽타기
+
+
+
     void OnJump(InputAction.CallbackContext context)
     {
-        if (!isGrounded()) return;
+        if (!isGrounded() || isHanging) return;
+        if (!_condition.UseStamina(jumpStamina)) return;
 
         _animator.SetBool("isJumping", true);
-        _rb.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
+        _dustParticleSystem.Stop();
+        Jump(Vector3.up);
     }
 
+    void Jump(Vector3 jumpDir)
+    {
+        isJumping = true;
+        _rb.AddForce(jumpDir * jumpPower, ForceMode.Impulse);
+    }
+
+
+    //바닥 착지 판정
     bool isGrounded()
     {
-        Ray ray = new Ray(transform.position, Vector3.down);
-        if (Physics.Raycast(ray, out RaycastHit hit, 1f, groundLayer)) return true;
+        Ray ray = new Ray(transform.position + new Vector3(0, 0.1f, 0), Vector3.down);
+        Debug.DrawRay(ray.origin, ray.direction * 0.2f, Color.red, 5f);
+        if (Physics.Raycast(ray, out RaycastHit hit, 0.2f, groundLayer)) return true;
         return false;
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Ground"))
+        // 점프판정
+        if (isGrounded())
         {
+            isJumping = false;
+            hangedAlready = false;
             _animator.SetBool("isJumping", false);
+        }
+
+        //움직이는 플랫폼 판정
+        if (collision.gameObject.CompareTag("MovingPlatform"))
+        {
+            if (collision.contacts[0].normal.y >= 0.5f)//윗면이면 
+            {
+                transform.SetParent(collision.transform);
+            }
+
+        }
+
+        //벽 판정
+        CheckWall(collision);
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        CheckWall(collision);
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("MovingPlatform"))
+        {
+            transform.SetParent(null);
+        }
+
+        _collider.material = normalMaterial;
+        if(hangedAlready) EndWallHanging();
+    }
+
+    //벽 판정
+    void CheckWall(Collision collision)
+    {
+        bool isWall = collision.contacts[0].normal.y < 0.5f;
+
+        _collider.material = isWall ? zeroFrictionMaterial : normalMaterial;
+
+        if(isWall && isJumping && !hangedAlready)
+        {
+            isJumping = false;
+            BeginWallHanging();
         }
     }
 
+    //벽타기 시작 -> Fixedupdate에서 시간 체크
+    void BeginWallHanging()
+    {
+        hangedAlready = true;
+        isHanging = true;
+        hangTimer = 0;
+        _rb.useGravity = false;
+        _rb.velocity = Vector3.zero;
+
+        Debug.Log("벽타기 시작");
+    }
+
+    //벽타기 끝
+    void EndWallHanging()
+    {
+        isHanging = false;
+        _rb.useGravity = true;
+        hangTimer = maxHangTime;
+
+        Debug.Log("벽타기 끝");
+    }
+
+    #endregion 점프, 벽타기
+
+    #region 마우스
+
+    //마우스 움직임 입력
     void OnLook(InputAction.CallbackContext context)
     {
         if (context.performed) _mouseDelta = context.ReadValue<Vector2>();
         else if (context.canceled) _mouseDelta = Vector2.zero;
     }
 
+    //카메라 및 플레이어 회전
     void Look()
     {
         _camCurXRot += _mouseDelta.y * _lookSens;
@@ -153,6 +321,7 @@ public class PlayerController : MonoBehaviour
         transform.eulerAngles += new Vector3(0, _mouseDelta.x * _lookSens);
     }
 
+    //마우스 좌클릭 입력
     void OnInvestigate(InputAction.CallbackContext context)
     {
         if (context.performed)
@@ -175,4 +344,6 @@ public class PlayerController : MonoBehaviour
             OnMouseCanceled?.Invoke();
         }
     }
+
+    #endregion 마우스
 }
