@@ -15,6 +15,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody _rb;
     [SerializeField] private Animator _animator;
     [SerializeField] private ParticleSystem _dustParticleSystem;
+    [SerializeField] private ParticleSystem _ShieldParticleSystem;
 
     //이동
     private Vector2 _curInput;
@@ -69,7 +70,8 @@ public class PlayerController : MonoBehaviour
 
         ResetActions();
 
-        _dustParticleSystem.Stop();
+        _dustParticleSystem.Stop(true);
+        _ShieldParticleSystem.Stop(true);
     }
 
     //InputAction Event 초기화
@@ -134,6 +136,8 @@ public class PlayerController : MonoBehaviour
             if (invincibleTime <= 0)
             {
                 _player.isInvincible = false;
+                _ShieldParticleSystem.Stop(true);
+                _ShieldParticleSystem.Clear();
                 Debug.Log("무적 끝");
             }
         }
@@ -186,7 +190,7 @@ public class PlayerController : MonoBehaviour
         else if (context.canceled)
         {
             _animator.SetBool("isMoving", false);
-            _dustParticleSystem.Stop();
+            _dustParticleSystem.Stop(true);
             _curInput = Vector2.zero;
         }
     }
@@ -216,7 +220,7 @@ public class PlayerController : MonoBehaviour
         jumpCount++;
         isJumping = true;
         _animator.SetBool("isJumping", true);
-        _dustParticleSystem.Stop();
+        _dustParticleSystem.Stop(true);
         _rb.AddForce(jumpDir * jumpPower, ForceMode.Impulse);
     }
 
@@ -317,5 +321,6 @@ public class PlayerController : MonoBehaviour
     {
         invincibleTime = time;
         _player.isInvincible = true;
+        _ShieldParticleSystem.Play();
     }
 }
