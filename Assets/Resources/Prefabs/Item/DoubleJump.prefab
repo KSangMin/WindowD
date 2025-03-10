@@ -73,7 +73,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 6dcf7dd554fa2324ea2d00dc0525f51b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: d0ffe979c107e3445ad635204aecd53f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -93,10 +93,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5349712187144354664}
-  - component: {fileID: 6557839291231025852}
+  - component: {fileID: -6978814876336462755}
   - component: {fileID: 181149234780009223}
   m_Layer: 0
-  m_Name: Booster
+  m_Name: DoubleJump
   m_TagString: Item
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -118,7 +118,7 @@ Transform:
   - {fileID: 8708057444345021772}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6557839291231025852
+--- !u!114 &-6978814876336462755
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,12 +127,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 6808336798982095816}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b840fcf77d58bb408bf023ccaa8c65c, type: 3}
+  m_Script: {fileID: 11500000, guid: 23ac68427cae66c4f9fa30f8997f425b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemData: {fileID: 11400000, guid: 9d26c62b5c1bf704583fa00b16777223, type: 2}
+  itemData: {fileID: 11400000, guid: fa82fe099e91b54489d9e12ff0175e1a, type: 2}
   time: 3
-  boosterSpeed: 10
+  jumpCount: 2
 --- !u!135 &181149234780009223
 SphereCollider:
   m_ObjectHideFlags: 0

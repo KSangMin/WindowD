@@ -18,8 +18,10 @@ public class PlayerController : MonoBehaviour
 
     //이동
     private Vector2 _curInput;
-    public float moveSpeed;
-    public float maxSpeed;
+    public float originalSpeed;
+    private float _moveSpeed;
+    public float originalMaxSpeed;
+    private float _maxSpeed;
     [HideInInspector] public Action<float> OnSpeedChanged;
 
     //점프
@@ -29,7 +31,7 @@ public class PlayerController : MonoBehaviour
     LayerMask groundLayer;
     bool isJumping;
     float jumpCount;
-    public float maxJumpCount = 2;
+    public float maxJumpCount = 1;
 
     //벽 마찰력
     public PhysicMaterial normalMaterial;
@@ -40,6 +42,11 @@ public class PlayerController : MonoBehaviour
     bool isHanging;
     float hangTimer;
     float maxHangTime = 1f;
+
+    //아이템
+    float runTime;
+    float doubleJumpTime;
+    float invincibleTime;
 
     #endregion 필드
 
@@ -54,6 +61,9 @@ public class PlayerController : MonoBehaviour
 
         _collider = GetComponent<Collider>();
         _rb = GetComponent<Rigidbody>();
+
+        _moveSpeed = originalSpeed;
+        _maxSpeed = originalMaxSpeed;
 
         groundLayer = LayerMask.GetMask("Ground");
 
@@ -76,6 +86,8 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        CheckItemTime();
+
         if (!_player.canLook) return;
 
         if (isHanging)//벽타기 진행
@@ -93,6 +105,40 @@ public class PlayerController : MonoBehaviour
         OnSpeedChanged?.Invoke(_rb.velocity.magnitude);
     }
 
+    void CheckItemTime()
+    {
+        if (runTime > 0)
+        {
+            runTime -= Time.deltaTime;
+            if (runTime <= 0)
+            {
+                _moveSpeed = originalSpeed;
+                _maxSpeed = originalMaxSpeed;
+                Debug.Log("달리기 끝");
+            }
+        }
+
+        if (doubleJumpTime > 0)
+        {
+            doubleJumpTime -= Time.deltaTime;
+            if (doubleJumpTime <= 0)
+            {
+                maxJumpCount = 1;
+                Debug.Log("더블점프 끝");
+            }
+        }
+
+        if (invincibleTime > 0)
+        {
+            invincibleTime -= Time.deltaTime;
+            if (invincibleTime <= 0)
+            {
+                _player.isInvincible = false;
+                Debug.Log("무적 끝");
+            }
+        }
+    }
+
     #endregion 이벤트 함수
 
     #region 이동
@@ -101,10 +147,10 @@ public class PlayerController : MonoBehaviour
     void Move()
     {
         Vector3 dir = transform.forward * _curInput.y + transform.right * _curInput.x;
-        dir *= moveSpeed;
+        dir *= _moveSpeed;
         Vector3 horVelocity = new Vector3(_rb.velocity.x, 0, _rb.velocity.z);
         float horSpeed = horVelocity.magnitude;
-        if (horSpeed > maxSpeed)
+        if (horSpeed > _maxSpeed)
         {
             //cos 계산 후 각도에 따라 다른 방향일 때만 힘 적용
             float cos = Vector3.Dot(dir.normalized, horVelocity.normalized);
@@ -123,7 +169,7 @@ public class PlayerController : MonoBehaviour
     void MoveVertical()
     {
         Vector3 dir = transform.up * _curInput.y + transform.right * _curInput.x;
-        dir *= moveSpeed;
+        dir *= _moveSpeed;
         dir.z = _rb.velocity.z;
         _rb.velocity = dir;
     }
@@ -145,18 +191,11 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void ExecuteRun(float time, float runSpeed)
+    public void BecomeRunnable(float time, float runSpeed)
     {
-        StartCoroutine(Run(time, runSpeed));
-    }
-
-    //달리기
-    IEnumerator Run(float time, float runSpeed)
-    {
-        float originalSpeed = moveSpeed;
-        moveSpeed = runSpeed;
-        yield return new WaitForSeconds(time);
-        moveSpeed = originalSpeed;
+        runTime = time;
+        _maxSpeed = _moveSpeed + runSpeed;
+        _moveSpeed += runSpeed;
     }
 
     #endregion 이동
@@ -179,6 +218,12 @@ public class PlayerController : MonoBehaviour
         _animator.SetBool("isJumping", true);
         _dustParticleSystem.Stop();
         _rb.AddForce(jumpDir * jumpPower, ForceMode.Impulse);
+    }
+
+    public void BecomeDoubleJumpable(float time, int count = 2)
+    {
+        doubleJumpTime = time;
+        maxJumpCount = count;
     }
 
     //바닥 착지 판정
@@ -267,4 +312,10 @@ public class PlayerController : MonoBehaviour
     }
 
     #endregion 점프, 벽타기
+
+    public void BecomeInvincible(float time)
+    {
+        invincibleTime = time;
+        _player.isInvincible = true;
+    }
 }

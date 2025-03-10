@@ -1,9 +1,8 @@
 using UnityEngine;
 
-public class Booster : FloatingItem
+public class Invincible : FloatingItem
 {
-    public float time;
-    public float boosterSpeed;
+    public float time = 3;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -12,7 +11,7 @@ public class Booster : FloatingItem
 
     public override void ApplyItem()
     {
-        GameManager.Instance.player.controller.BecomeRunnable(time, boosterSpeed);
+        GameManager.Instance.player.controller.BecomeInvincible(time);
         Destroy(gameObject);
     }
 }

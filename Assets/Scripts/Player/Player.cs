@@ -7,6 +7,7 @@ public class Player : MonoBehaviour
     [HideInInspector] public PlayerCondition condition;
     [HideInInspector] public InputHandler inputHandler;
 
+    public bool isInvincible;
     public bool canLook;
 
     private void Awake()

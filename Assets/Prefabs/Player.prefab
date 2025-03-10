@@ -6386,6 +6386,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 0}
   condition: {fileID: 0}
+  inputHandler: {fileID: 0}
+  canLook: 0
 --- !u!114 &8373570005752191138
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6400,11 +6402,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _animator: {fileID: 7095448432727851225}
   _dustParticleSystem: {fileID: 8977174895704704163}
-  moveSpeed: 5
-  maxSpeed: 8
+  originalSpeed: 8
+  originalMaxSpeed: 8
   jumpPower: 80
   jumpStamina: 5
-  maxJumpCount: 2
+  maxJumpCount: 1
   normalMaterial: {fileID: 13400000, guid: 3286e48d77ee037499b8b8685b11292b, type: 2}
   zeroFrictionMaterial: {fileID: 13400000, guid: 89bfcd20d2473db4c9050484d31b7332, type: 2}
 --- !u!114 &660638333055066651
@@ -6527,6 +6529,42 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1e8d2bcfa72be64c9b1f807aeb11993, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  moveAction:
+    m_Name: Move
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 51d4a31c-3bea-406a-921b-c10f8277045a
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  jumpAction:
+    m_Name: Jump
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 3d2193d4-dab8-4005-8d06-bb3a8c7eab5f
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  lookAction:
+    m_Name: Look
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 4cd35d9b-1055-44c4-ad30-6d88554edf0e
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  InvestigateAction:
+    m_Name: Investigate
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 19a7cc31-58b5-4eb1-bd7f-d93fe3406bf5
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
 --- !u!114 &5180568875667817994
 MonoBehaviour:
   m_ObjectHideFlags: 0
