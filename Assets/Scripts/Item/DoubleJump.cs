@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class DoubleJump : FloatingItem
 {
-    public float time = 3;
     public int jumpCount = 2;
 
     private void OnTriggerEnter(Collider other)
@@ -12,7 +11,9 @@ public class DoubleJump : FloatingItem
 
     public override void ApplyItem()
     {
-        GameManager.Instance.player.controller.BecomeDoubleJumpable(time, jumpCount);
-        Destroy(gameObject);
+        base.ApplyItem();
+
+        GameManager.Instance.player.controller.BecomeDoubleJumpable(jumpCount);
+        //Destroy(gameObject);
     }
 }

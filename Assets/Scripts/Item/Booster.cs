@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class Booster : FloatingItem
 {
-    public float time;
     public float boosterSpeed;
 
     private void OnTriggerEnter(Collider other)
@@ -12,7 +11,9 @@ public class Booster : FloatingItem
 
     public override void ApplyItem()
     {
-        GameManager.Instance.player.controller.BecomeRunnable(time, boosterSpeed);
-        Destroy(gameObject);
+        base.ApplyItem();
+
+        GameManager.Instance.player.controller.BecomeRunnable(boosterSpeed);
+        //Destroy(gameObject);
     }
 }

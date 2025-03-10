@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using static UnityEditor.Experimental.GraphView.GraphView;
 
@@ -9,6 +10,8 @@ public class Player : MonoBehaviour
 
     public bool isInvincible;
     public bool canLook;
+
+    public Action<ItemData> OnItemChanged;
 
     private void Awake()
     {
@@ -23,5 +26,10 @@ public class Player : MonoBehaviour
     {
         canLook = flag;
         Cursor.lockState = canLook ? CursorLockMode.Locked : CursorLockMode.None;
+    }
+
+    public void SetItem(ItemData item)
+    {
+        OnItemChanged?.Invoke(item);
     }
 }

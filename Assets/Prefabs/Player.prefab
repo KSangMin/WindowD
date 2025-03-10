@@ -488,12 +488,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1486783678121790263}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.6, z: 0}
-  m_LocalScale: {x: 1.2, y: 1, z: 1.2}
+  m_LocalRotation: {x: 0.0000017269483, y: -4.0899547e-16, z: -1.1919095e-14, w: 1}
+  m_LocalPosition: {x: 0, y: 0.14, z: 0}
+  m_LocalScale: {x: 1.2, y: 1, z: 1.2000002}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 812955975232418990}
+  m_Father: {fileID: 328783299919746911}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!198 &3465802232512831491
 ParticleSystem:
@@ -1125,7 +1125,7 @@ ParticleSystem:
         m_RotationOrder: 4
   ShapeModule:
     serializedVersion: 6
-    enabled: 1
+    enabled: 0
     type: 0
     angle: 25
     length: 5
@@ -5691,7 +5691,8 @@ Transform:
   m_LocalPosition: {x: 8.840493e-24, y: 0.628728, z: 1.4551915e-11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1860271867169887923}
   m_Father: {fileID: 8642065543808449276}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4422515774036194998
@@ -10947,7 +10948,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 26.991467
+  field of view: 60
   orthographic: 0
   orthographic size: 5
   m_Depth: 0
@@ -11267,7 +11268,6 @@ Transform:
   - {fileID: 5206793137014494035}
   - {fileID: 4440972134857084230}
   - {fileID: 8632041309957113562}
-  - {fileID: 1860271867169887923}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7065779978208489582
@@ -11302,8 +11302,9 @@ MonoBehaviour:
   _animator: {fileID: 7095448432727851225}
   _dustParticleSystem: {fileID: 8977174895704704163}
   _ShieldParticleSystem: {fileID: 3465802232512831491}
-  originalSpeed: 8
-  originalMaxSpeed: 8
+  moveSpeed: 5
+  runSpeed: 5
+  maxSpeed: 5
   jumpPower: 80
   jumpStamina: 5
   maxJumpCount: 1

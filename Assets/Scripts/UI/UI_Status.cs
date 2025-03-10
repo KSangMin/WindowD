@@ -33,7 +33,7 @@ public class UI_Status : UI
 
     void OnSpeedChanged(float curValue)
     {
-        imgSpeedMeter.fillAmount = Mathf.Clamp(curValue / GameManager.Instance.player.controller.originalMaxSpeed, 0.145f, 1f);
+        imgSpeedMeter.fillAmount = Mathf.Clamp(curValue / GameManager.Instance.player.controller.maxSpeed + GameManager.Instance.player.controller.runSpeed, 0.145f, 1f);
         speedText.text = ((int)curValue).ToString();
     }
 

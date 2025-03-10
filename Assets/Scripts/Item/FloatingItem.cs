@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public abstract class FloatingItem : MonoBehaviour
+public class FloatingItem : MonoBehaviour
 {
     public ItemData itemData;
 
@@ -25,5 +25,8 @@ public abstract class FloatingItem : MonoBehaviour
         itemSprite.Rotate(new Vector3(0, Time.deltaTime * rotSpeed, 0));
     }
 
-    public abstract void ApplyItem();
+    public virtual void ApplyItem()
+    {
+        GameManager.Instance.player.SetItem(itemData);
+    }
 }

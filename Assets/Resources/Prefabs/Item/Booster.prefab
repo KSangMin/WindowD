@@ -131,8 +131,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemData: {fileID: 11400000, guid: 9d26c62b5c1bf704583fa00b16777223, type: 2}
-  time: 3
-  boosterSpeed: 10
+  boosterSpeed: 3
 --- !u!135 &181149234780009223
 SphereCollider:
   m_ObjectHideFlags: 0

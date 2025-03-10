@@ -2,8 +2,6 @@ using UnityEngine;
 
 public class Invincible : FloatingItem
 {
-    public float time = 3;
-
     private void OnTriggerEnter(Collider other)
     {
         ApplyItem();
@@ -11,7 +9,9 @@ public class Invincible : FloatingItem
 
     public override void ApplyItem()
     {
-        GameManager.Instance.player.controller.BecomeInvincible(time);
-        Destroy(gameObject);
+        base.ApplyItem();
+
+        GameManager.Instance.player.controller.BecomeInvincible();
+        //Destroy(gameObject);
     }
 }
