@@ -6345,6 +6345,8 @@ GameObject:
   - component: {fileID: 2128908330237006147}
   - component: {fileID: 1244590350728272054}
   - component: {fileID: 3452083446829156725}
+  - component: {fileID: 6057805279977548756}
+  - component: {fileID: 5180568875667817994}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -6402,6 +6404,7 @@ MonoBehaviour:
   maxSpeed: 8
   jumpPower: 80
   jumpStamina: 5
+  maxJumpCount: 2
   normalMaterial: {fileID: 13400000, guid: 3286e48d77ee037499b8b8685b11292b, type: 2}
   zeroFrictionMaterial: {fileID: 13400000, guid: 89bfcd20d2473db4c9050484d31b7332, type: 2}
 --- !u!114 &660638333055066651
@@ -6512,6 +6515,30 @@ CapsuleCollider:
   m_Height: 1.4592532
   m_Direction: 1
   m_Center: {x: 0, y: 0.73037344, z: 0}
+--- !u!114 &6057805279977548756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006343214494951595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1e8d2bcfa72be64c9b1f807aeb11993, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5180568875667817994
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9006343214494951595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f3e79a3278d1914b930fb7b58daffbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &9116688317378238687
 GameObject:
   m_ObjectHideFlags: 0

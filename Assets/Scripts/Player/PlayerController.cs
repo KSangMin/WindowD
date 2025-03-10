@@ -7,19 +7,14 @@ public class PlayerController : MonoBehaviour
 {
     #region 필드
 
+    private Player _player;
     private PlayerCondition _condition;
+    private InputHandler _inputHandler;
+    private CameraController _cameraController;
     private Collider _collider;
     private Rigidbody _rb;
-    private PlayerInput _input;
-    private Camera _cam;
     [SerializeField] private Animator _animator;
     [SerializeField] private ParticleSystem _dustParticleSystem;
-
-    //입력
-    private InputAction _moveAction;
-    private InputAction _jumpAction;
-    private InputAction _lookAction;
-    private InputAction _InvestigateAction;
 
     //이동
     private Vector2 _curInput;
@@ -35,15 +30,6 @@ public class PlayerController : MonoBehaviour
     bool isJumping;
     float jumpCount;
     public float maxJumpCount = 2;
-
-    //회전
-    private Vector2 _mouseDelta;
-    private float _camCurXRot;
-    private float _camDistance = 6f;
-    private float _lookSens = 0.1f;
-    private float _minXLook = -60;
-    private float _maxXLook = 60;
-    private bool _canLook;
 
     //벽 마찰력
     public PhysicMaterial normalMaterial;
@@ -61,11 +47,13 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
+        _player = GetComponent<Player>();
         _condition = GetComponent<PlayerCondition>();
+        _inputHandler = GetComponent<InputHandler>();
+        _cameraController = GetComponent<CameraController>();
+
         _collider = GetComponent<Collider>();
         _rb = GetComponent<Rigidbody>();
-        _input = GetComponent<PlayerInput>();
-        _cam = Camera.main;
 
         groundLayer = LayerMask.GetMask("Ground");
 
@@ -77,34 +65,18 @@ public class PlayerController : MonoBehaviour
     //InputAction Event 초기화
     void ResetActions()
     {
-        _moveAction = _input.actions["Move"];
-        _jumpAction = _input.actions["Jump"];
-        _lookAction = _input.actions["Look"];
-        _InvestigateAction = _input.actions["Investigate"];
+        _inputHandler.moveAction.performed -= OnMove;
+        _inputHandler.moveAction.canceled -= OnMove;
+        _inputHandler.jumpAction.started -= OnJump;
 
-        _moveAction.performed -= OnMove;
-        _moveAction.canceled -= OnMove;
-        _jumpAction.started -= OnJump;
-        _lookAction.performed -= OnLook;
-        _lookAction.canceled -= OnLook;
-        _InvestigateAction.performed -= OnInvestigate;
-
-        _moveAction.performed += OnMove;
-        _moveAction.canceled += OnMove;
-        _jumpAction.started += OnJump;
-        _lookAction.performed += OnLook;
-        _lookAction.canceled += OnLook;
-        _InvestigateAction.performed += OnInvestigate;
-    }
-
-    private void Start()
-    {
-        SetCanLook(true);
+        _inputHandler.moveAction.performed += OnMove;
+        _inputHandler.moveAction.canceled += OnMove;
+        _inputHandler.jumpAction.started += OnJump;
     }
 
     private void FixedUpdate()
     {
-        if (!_canLook) return;
+        if (!_player.canLook) return;
 
         if (isHanging)//벽타기 진행
         {
@@ -119,11 +91,6 @@ public class PlayerController : MonoBehaviour
 
         //속도계 UI
         OnSpeedChanged?.Invoke(_rb.velocity.magnitude);
-    }
-
-    private void LateUpdate()
-    {
-        if (_canLook) Look();
     }
 
     #endregion 이벤트 함수
@@ -164,7 +131,7 @@ public class PlayerController : MonoBehaviour
     //키보드 방향키 입력
     void OnMove(InputAction.CallbackContext context)
     {
-        if (_canLook && context.performed)
+        if (_player.canLook && context.performed)
         {
             _animator.SetBool("isMoving", true);
             if (isGrounded()) _dustParticleSystem.Play();
@@ -300,56 +267,4 @@ public class PlayerController : MonoBehaviour
     }
 
     #endregion 점프, 벽타기
-
-    #region 마우스
-
-    //마우스 움직임 입력
-    void OnLook(InputAction.CallbackContext context)
-    {
-        if (context.performed) _mouseDelta = context.ReadValue<Vector2>();
-        else if (context.canceled) _mouseDelta = Vector2.zero;
-    }
-
-    //카메라 및 플레이어 회전
-    void Look()
-    {
-        _camCurXRot += _mouseDelta.y * _lookSens;
-        _camCurXRot = Mathf.Clamp(_camCurXRot, _minXLook, _maxXLook);
-        _cam.transform.localEulerAngles = new Vector3(-_camCurXRot, 0, 0);
-
-        Vector3 c = transform.position + new Vector3(0, 2, 0);
-        c -= _cam.transform.forward * _camDistance;
-        _cam.transform.position = c;
-
-        transform.eulerAngles += new Vector3(0, _mouseDelta.x * _lookSens);
-    }
-
-    public void SetCanLook(bool flag)
-    {
-        _canLook = flag;
-        Cursor.lockState = _canLook ? CursorLockMode.Locked : CursorLockMode.None;
-    }
-
-    //마우스 좌클릭 입력
-    void OnInvestigate(InputAction.CallbackContext context)
-    {
-        if (!_canLook) return;
-
-        if (context.performed)
-        {
-            float distanceToHead = Vector3.Distance(transform.position, _cam.transform.position);
-            Ray ray = new Ray(_cam.transform.position + _cam.transform.forward * distanceToHead, _cam.transform.forward);
-            Debug.DrawRay(ray.origin, ray.direction * 3f, Color.red, .1f);
-            if (Physics.Raycast(ray, out RaycastHit hit, 5f) && hit.collider.gameObject.TryGetComponent<FloatingItem>(out FloatingItem item))
-            {
-                string info = item.itemData.displayName + "\n" + item.itemData.description;
-                var ui = UIManager.Instance.ShowPopupUI<UI_Info>();
-                ui.SetInfoText(info);
-                ui.destroyAction += () => SetCanLook(true);
-                SetCanLook(false);
-            }
-        }
-    }
-
-    #endregion 마우스
 }
