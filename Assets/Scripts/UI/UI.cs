@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class UI_Base : MonoBehaviour
+public class UI : MonoBehaviour
 {
     GameObject panel;
 
@@ -21,6 +21,6 @@ public class UI_Base : MonoBehaviour
 
     public virtual void Destroy()
     {
-        Destroy(gameObject);
+        UIManager.Instance.RemoveUI(this);
     }
 }

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Scene_Main : Scene_Base
+public class Scene_Main : Scene
 {
     protected override void Init()
     {

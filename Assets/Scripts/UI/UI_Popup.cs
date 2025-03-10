@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class UI_Popup : UI_Base
+public class UI_Popup : UI
 {
     Canvas canvas;
 
@@ -23,6 +23,6 @@ public class UI_Popup : UI_Base
     {
         destroyAction?.Invoke();
 
-        base.Destroy();
+        UIManager.Instance.RemovePopupUI();
     }
 }

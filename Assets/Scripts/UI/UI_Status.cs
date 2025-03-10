@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UI_Status : UI_Base
+public class UI_Status : UI
 {
     public Image imgHealthBar;
     public Image imgStaminaBar;
