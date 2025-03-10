@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UI_Info : UI_Popup
+public class UI_Info : UI
 {
     public Button closeButton;
 
@@ -10,7 +10,7 @@ public class UI_Info : UI_Popup
 
     private void Start()
     {
-        closeButton.onClick.AddListener(Destroy);
+        closeButton.onClick.AddListener(Hide);
     }
 
     public void SetInfoText(string info)

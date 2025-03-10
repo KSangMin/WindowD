@@ -82,9 +82,9 @@ public class CameraController : MonoBehaviour
             if (Physics.Raycast(ray, out RaycastHit hit, 5f) && hit.collider.gameObject.TryGetComponent<FloatingItem>(out FloatingItem item))
             {
                 string info = item.itemData.displayName + "\n" + item.itemData.description;
-                var ui = UIManager.Instance.ShowPopupUI<UI_Info>();
+                var ui = UIManager.Instance.ShowUI<UI_Info>();
                 ui.SetInfoText(info);
-                ui.destroyAction += () => _player.SetCanLook(true);
+                ui.closeButton.onClick.AddListener(() => _player.SetCanLook(true));
                 _player.SetCanLook(false);
             }
         }
