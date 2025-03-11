@@ -146,7 +146,7 @@ GameObject:
   - component: {fileID: 5694695179234270236}
   - component: {fileID: 782502650165790612}
   - component: {fileID: 7395272058294613037}
-  - component: {fileID: 1492236581493308841}
+  - component: {fileID: -3692214308581946746}
   m_Layer: 5
   m_Name: UI_InteractableIndicator
   m_TagString: Untagged
@@ -237,7 +237,7 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &1492236581493308841
+--- !u!114 &-3692214308581946746
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -249,3 +249,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f5c277707cbf6b499f34af5f9385bb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  infoText: {fileID: 2589306450321482609}

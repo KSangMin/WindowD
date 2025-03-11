@@ -295,7 +295,11 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.CompareTag("Interactable")) UIManager.Instance.ShowUI<UI_InteractableIndicator>(GameManager.Instance.player.transform);
+        if (other.CompareTag("Interactable"))
+        {
+            string info = other.GetComponent<IInteractable>().InfoText;
+            UIManager.Instance.ShowUI<UI_InteractableIndicator>(GameManager.Instance.player.transform).SetInfoText(info);
+        }
     }
 
     private void OnTriggerExit(Collider other)
