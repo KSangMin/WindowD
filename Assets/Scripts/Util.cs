@@ -19,7 +19,8 @@ public static class Util
             throw new InvalidOperationException($"Failed to Load Prefab: {path}");
         }
 
-        return GameObject.Instantiate(go, position, rotation, parent);
+        if(parent != null) return GameObject.Instantiate(go, parent, false);
+        else return GameObject.Instantiate(go, position, rotation, parent);
     }
 
     /// <summary>
