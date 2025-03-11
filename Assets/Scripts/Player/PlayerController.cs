@@ -27,7 +27,6 @@ public class PlayerController : MonoBehaviour
     //มกวม
     public float jumpPower;
     public float jumpStamina;
-    //[HideInInspector] public bool isMovable;
     private LayerMask _groundLayer;
     private bool _isJumping;
     private float _jumpCount;
@@ -283,7 +282,7 @@ public class PlayerController : MonoBehaviour
     {
         if (!_player.canLook) return;
 
-        Collider[] hits = Physics.OverlapSphere(transform.position, 2f, LayerMask.GetMask("Interactable"));
+        Collider[] hits = Physics.OverlapSphere(transform.position, 1f, LayerMask.GetMask("Interactable"));
 
         hits[0].GetComponent<IInteractable>().Interact();
     }
@@ -291,7 +290,7 @@ public class PlayerController : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, 2f);
+        Gizmos.DrawWireSphere(transform.position, 1f);
     }
 
     private void OnTriggerEnter(Collider other)

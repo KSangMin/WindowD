@@ -19,7 +19,7 @@ public class UI : MonoBehaviour
         panel.SetActive(false);
     }
 
-    public virtual void Destroy()
+    public virtual void Close()
     {
         UIManager.Instance.RemoveUI(this);
     }

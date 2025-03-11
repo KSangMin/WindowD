@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class UIManager : Singleton<UIManager>
@@ -83,6 +84,7 @@ public class UIManager : Singleton<UIManager>
         return ShowUI<T>(Root);
     }
 
+    //다른 클래스들에서 호출하는 메서드
     public void RemoveUI<T>() where T: UI
     {
         Type uiType = typeof(T);
@@ -90,12 +92,13 @@ public class UIManager : Singleton<UIManager>
         if (_sceneDict.TryGetValue(uiType, out UI existingUI))
         {
             _sceneDict.Remove(uiType);
-            existingUI.Destroy();
+            Destroy(existingUI.gameObject);
             return;
         }
         else throw new InvalidOperationException($"There's No {uiType.Name} in UIManager");
     }
 
+    //UI의 Close에서 호출하는 메서드
     public void RemoveUI(UI ui)
     {
         Type uiType = ui.GetType();
@@ -103,7 +106,7 @@ public class UIManager : Singleton<UIManager>
         if (_sceneDict.TryGetValue(uiType, out UI existingUI))
         {
             _sceneDict.Remove(uiType);
-            existingUI.Destroy();
+            Destroy(existingUI.gameObject);
             return;
         }
         else throw new InvalidOperationException($"There's No {uiType.Name} in UIManager");
@@ -111,14 +114,13 @@ public class UIManager : Singleton<UIManager>
 
     public void RemoveAllUI()
     {
-        foreach (UI ui in _sceneDict.Values)
+        foreach (UI ui in _sceneDict.Values.ToList())
         {
-            ui.Destroy();
+            Destroy(ui.gameObject);
         }
-
         _sceneDict.Clear();
 
-        while(_popupUIs.Count > 0)
+        while (_popupUIs.Count > 0)
         {
             RemovePopupUI();
         }

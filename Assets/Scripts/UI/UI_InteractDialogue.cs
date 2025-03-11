@@ -11,8 +11,8 @@ public class UI_InteractDialogue : UI
     {
         base.Awake();
 
-        Hide();
-        closeButton.onClick.AddListener(Close);
+        Resume();
+        closeButton.onClick.AddListener(Resume);
     }
 
     public void ShowDialogue(string info)
@@ -22,7 +22,7 @@ public class UI_InteractDialogue : UI
         Show();
     }
 
-    void Close()
+    void Resume()
     {
         GameManager.Instance.player.SetCanLook(true);
         Hide();

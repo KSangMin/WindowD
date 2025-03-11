@@ -15,6 +15,8 @@ public class PlayerCondition : MonoBehaviour, IDamageable
 
     private void FixedUpdate()
     {
+        if (GameManager.Instance.player.canLook == false) return;
+
         health.Subtract(Time.deltaTime);
         stamina.Add(Time.deltaTime);
     }

@@ -37,12 +37,12 @@ public class UI_Status : UI
         speedText.text = ((int)curValue).ToString();
     }
 
-    public override void Destroy()
+    public override void Close()
     {
         GameManager.Instance.player.condition.health.OnStatChangedWithFloat -= OnHealthChanged;
         GameManager.Instance.player.condition.stamina.OnStatChangedWithFloat -= OnStaminaChanged;
         GameManager.Instance.player.controller.OnSpeedChanged += OnSpeedChanged;
 
-        base.Destroy();
+        base.Close();
     }
 }

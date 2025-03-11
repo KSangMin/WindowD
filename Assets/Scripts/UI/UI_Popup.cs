@@ -19,7 +19,7 @@ public class UI_Popup : UI
         canvas.sortingOrder = order;
     }
 
-    public override void Destroy()
+    public override void Close()
     {
         destroyAction?.Invoke();
 

@@ -26,7 +26,7 @@ public class CameraController : MonoBehaviour
 
     private void Start()
     {
-        _player.SetCanLook(true);
+        _player.SetCanLook(false);
 
         ResetActions();
     }
