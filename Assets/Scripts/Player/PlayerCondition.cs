@@ -3,8 +3,15 @@ using UnityEngine;
 
 public class PlayerCondition : MonoBehaviour, IDamageable
 {
+    private Player _player;
+
     public Stat health = new Stat(100, 100);
     public Stat stamina = new Stat(100, 100);
+
+    private void Start()
+    {
+        _player = GetComponent<Player>();
+    }
 
     private void FixedUpdate()
     {
@@ -22,6 +29,8 @@ public class PlayerCondition : MonoBehaviour, IDamageable
 
     public void TakeDamage(float damage)
     {
+        if (_player.isInvincible) return;
+
         health.Subtract(damage);
         if(health.CurValue <= 0)
         {

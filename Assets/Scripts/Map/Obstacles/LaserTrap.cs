@@ -14,7 +14,7 @@ public class LaserTrap : MonoBehaviour
 
     private void Update()
     {
-        if(!isDetected) CheckPlayer();
+        if(!isDetected && !GameManager.Instance.player.isInvincible) CheckPlayer();
         if (isDetected)
         {
             detectTime -= Time.deltaTime;

@@ -60,8 +60,10 @@ public class UIManager : Singleton<UIManager>
         return null;
     }
 
-    public T ShowUI<T>() where T : UI
+    public T ShowUI<T>(Transform par) where T : UI
     {
+        if(par == null) return ShowUI<T>();
+
         Type uiType = typeof(T);
 
         if (_sceneDict.TryGetValue(uiType, out UI existingUI))
@@ -70,10 +72,15 @@ public class UIManager : Singleton<UIManager>
             return existingUI as T;
         }
 
-        T ui = Util.InstantiatePrefabAndGetComponent<T>(path: $"UI/{uiType.Name}", parent: Root);
+        T ui = Util.InstantiatePrefabAndGetComponent<T>(path: $"UI/{uiType.Name}", parent: par);
         _sceneDict[uiType] = ui;
 
         return ui;
+    }
+
+    public T ShowUI<T>() where T : UI
+    {
+        return ShowUI<T>(Root);
     }
 
     public void RemoveUI<T>() where T: UI

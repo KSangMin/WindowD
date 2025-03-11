@@ -11363,6 +11363,10 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: bea7f29d-1b68-4cdc-a4c3-698863094401
     m_ActionName: Player/Investigate[/Mouse/leftButton]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: ac40d477-377b-4fd9-b1bd-4eb17ef9d65c
+    m_ActionName: Player/Interact[/Keyboard/e]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -11457,11 +11461,20 @@ MonoBehaviour:
     m_Interactions: 
     m_SingletonActionBindings: []
     m_Flags: 0
-  InvestigateAction:
-    m_Name: Investigate
+  investigateAction:
+    m_Name: 
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: 19a7cc31-58b5-4eb1-bd7f-d93fe3406bf5
+    m_Id: c7c00c83-22fa-4c3c-ae26-df4d67d28fa5
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  interactAction:
+    m_Name: 
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: edc5d4a4-e878-4c69-af0c-9f68019c2699
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings: []

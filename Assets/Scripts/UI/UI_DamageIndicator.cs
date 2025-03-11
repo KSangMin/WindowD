@@ -12,6 +12,8 @@ public class UI_DamageIndicator : UI
 
     public void Hitted()
     {
+        if (GameManager.Instance.player.isInvincible) return;
+
         StartCoroutine(Hit());
     }
 

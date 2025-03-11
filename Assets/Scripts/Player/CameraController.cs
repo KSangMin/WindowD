@@ -36,11 +36,11 @@ public class CameraController : MonoBehaviour
     {
         _inputHandler.lookAction.performed -= OnLook;
         _inputHandler.lookAction.canceled -= OnLook;
-        _inputHandler.InvestigateAction.performed -= OnInvestigate;
+        _inputHandler.investigateAction.performed -= OnInvestigate;
 
         _inputHandler.lookAction.performed += OnLook;
         _inputHandler.lookAction.canceled += OnLook;
-        _inputHandler.InvestigateAction.performed += OnInvestigate;
+        _inputHandler.investigateAction.performed += OnInvestigate;
     }
 
     private void LateUpdate()

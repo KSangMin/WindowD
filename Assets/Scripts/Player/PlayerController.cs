@@ -28,9 +28,9 @@ public class PlayerController : MonoBehaviour
     public float jumpPower;
     public float jumpStamina;
     //[HideInInspector] public bool isMovable;
-    LayerMask groundLayer;
-    bool isJumping;
-    float jumpCount;
+    private LayerMask _groundLayer;
+    private bool _isJumping;
+    private float _jumpCount;
     public float maxJumpCount = 1;
 
     //벽 마찰력
@@ -57,7 +57,7 @@ public class PlayerController : MonoBehaviour
         _collider = GetComponent<Collider>();
         _rb = GetComponent<Rigidbody>();
 
-        groundLayer = LayerMask.GetMask("Ground");
+        _groundLayer = LayerMask.GetMask("Ground");
 
         ResetActions();
 
@@ -72,10 +72,12 @@ public class PlayerController : MonoBehaviour
         _inputHandler.moveAction.performed -= OnMove;
         _inputHandler.moveAction.canceled -= OnMove;
         _inputHandler.jumpAction.started -= OnJump;
+        _inputHandler.interactAction.started -= OnInteract;
 
         _inputHandler.moveAction.performed += OnMove;
         _inputHandler.moveAction.canceled += OnMove;
         _inputHandler.jumpAction.started += OnJump;
+        _inputHandler.interactAction.started += OnInteract;
     }
 
     private void FixedUpdate()
@@ -98,8 +100,6 @@ public class PlayerController : MonoBehaviour
     }
 
     #endregion 이벤트 함수
-
-    #region 이동
 
     //수평이동
     void Move()
@@ -148,14 +148,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    #endregion 이동
-
-    #region 점프, 벽타기
-
     //키보드 스페이스바 입력
     void OnJump(InputAction.CallbackContext context)
     {
-        if (isHanging || jumpCount >= maxJumpCount) return;
+        if (isHanging || _jumpCount >= maxJumpCount) return;
         if (!_condition.UseStamina(jumpStamina)) return;
 
         Jump(Vector3.up);
@@ -163,8 +159,8 @@ public class PlayerController : MonoBehaviour
 
     void Jump(Vector3 jumpDir)
     {
-        jumpCount++;
-        isJumping = true;
+        _jumpCount++;
+        _isJumping = true;
         _animator.SetBool("isJumping", true);
         _dustParticleSystem.Stop(true);
         _rb.velocity = new Vector3(_rb.velocity.x, 0, _rb.velocity.z);
@@ -176,7 +172,7 @@ public class PlayerController : MonoBehaviour
     {
         Ray ray = new Ray(transform.position + new Vector3(0, 0.1f, 0), Vector3.down);
         //Debug.DrawRay(ray.origin, ray.direction * 0.2f, Color.red, 5f);
-        return Physics.Raycast(ray, 0.2f, groundLayer);
+        return Physics.Raycast(ray, 0.2f, _groundLayer);
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -184,8 +180,8 @@ public class PlayerController : MonoBehaviour
         // 점프판정
         if (isGrounded())
         {
-            jumpCount = 0;
-            isJumping = false;
+            _jumpCount = 0;
+            _isJumping = false;
             hangedAlready = false;
             _animator.SetBool("isJumping", false);
         }
@@ -227,9 +223,9 @@ public class PlayerController : MonoBehaviour
 
         _collider.material = isWall ? zeroFrictionMaterial : normalMaterial;
 
-        if(isWall && isJumping && !hangedAlready)
+        if(isWall && _isJumping && !hangedAlready)
         {
-            isJumping = false;
+            _isJumping = false;
             BeginWallHanging();
         }
     }
@@ -256,8 +252,6 @@ public class PlayerController : MonoBehaviour
         Debug.Log("벽타기 끝");
     }
 
-    #endregion 점프, 벽타기
-
     void ResetItemStat()
     {
         runSpeed = 0;
@@ -283,5 +277,30 @@ public class PlayerController : MonoBehaviour
         ResetItemStat();
         _player.isInvincible = true;
         _ShieldParticleSystem.Play();
+    }
+
+    void OnInteract(InputAction.CallbackContext context)
+    {
+        if (!_player.canLook) return;
+
+        Collider[] hits = Physics.OverlapSphere(transform.position, 2f, LayerMask.GetMask("Interactable"));
+
+        hits[0].GetComponent<IInteractable>().Interact();
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, 2f);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.CompareTag("Interactable")) UIManager.Instance.ShowUI<UI_InteractableIndicator>(GameManager.Instance.player.transform);
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Interactable")) UIManager.Instance.HideUI<UI_InteractableIndicator>();
     }
 }
